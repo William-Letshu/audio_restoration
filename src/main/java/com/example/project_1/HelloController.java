@@ -7,8 +7,6 @@ import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
@@ -16,9 +14,9 @@ import java.nio.ByteBuffer;
 
 public class HelloController {
     @FXML
-    private ImageView New;
+    private ImageView imageViewBefore;
     @FXML
-    private ImageView Older;
+    private ImageView imageViewAfter;
     @FXML
     private Label welcomeText;
     @FXML
@@ -31,6 +29,9 @@ public class HelloController {
     private Button choose_file;
     
     File selected;
+    String NOISE_REDUCED_PATH = "src/main/resources/com/example/Audio/output_audio.wav";
+    String EQUALIZED_PATH = "src/main/resources/com/example/Audio/equalized_audio.wav";
+    private boolean PERFORMED_NOISE_REDUCTION = false;
 
     protected byte[] convertDoubleToByteArray(double[] doubles) {
         ByteBuffer bb = ByteBuffer.allocate(doubles.length * 8);
@@ -43,56 +44,39 @@ public class HelloController {
      * This function performs noise reduction
      */
     @FXML
-    protected void noiseReduction() throws UnsupportedAudioFileException, IOException {
+    protected boolean noiseReduction() throws UnsupportedAudioFileException, IOException {
+        imageViewBefore.setVisible(true);
+        imageViewAfter.setVisible(true);
         System.out.println("Performed Noise Reduction");
         if (selected == null){
             System.out.println("File empty");
-        }else{
-            AudioInputStream audioIn = AudioSystem.getAudioInputStream(selected);
-            int numFrames = (int) audioIn.getFrameLength();
-            int numChannels = audioIn.getFormat().getChannels();
-            int bytesPerFrame = audioIn.getFormat().getFrameSize();
-            int sampleRate = (int) audioIn.getFormat().getSampleRate();
-            byte[] data = new byte[numFrames * bytesPerFrame];
-            audioIn.read(data);
-            audioIn.close();
-
-            double[] noisySignal = new double[numFrames * numChannels];
-            
-           for (int i = 0; i < numFrames; i++) {
-               for (int j = 0; j < numChannels; j++) {
-                   int idx = i * bytesPerFrame + j * 2;
-                   noisySignal[i * numChannels + j] = ((data[idx+1] & 0xff) << 8) | (data[idx] & 0xff);
-               }
-           }
-           KalmanFiltering kf = new KalmanFiltering(numChannels);
-           for (int i = 0; i < numFrames; i++) {
-               double[] z = new double[numChannels];
-               for (int j = 0; j < numChannels; j++) {
-                   z[j] = noisySignal[i * numChannels + j];
-               }
-               kf.update(z);
-               double[] state = kf.getState();
-               for (int j = 0; j < numChannels; j++) {
-                   noisySignal[i * numChannels + j] = state[j];
-               }
-           }
-
-           System.out.println("Done");
-           System.out.println(noisySignal.length);
-           Older.setImage(null);
-
+        }else {
+            File reduced_audio = new File(NOISE_REDUCED_PATH);
+            NoiseReduction.applyWienerFilter(selected,reduced_audio, imageViewBefore,imageViewAfter);
+            PERFORMED_NOISE_REDUCTION = true;
+            return true;
         }
-
+        return false;
     }
 
     /**
      * This function performs equalization
      */
     @FXML
-    protected void equalization(){
+    protected void equalization() throws UnsupportedAudioFileException, IOException {
         System.out.println("Perform equalization");
-
+        imageViewBefore.setVisible(true);
+        imageViewAfter.setVisible(true);
+        if (!PERFORMED_NOISE_REDUCTION){
+            if (selected != null){
+                File equalized = new File(EQUALIZED_PATH);
+                Equalization.applyParametricEqualization(selected,equalized);
+            }
+        }else{
+            File noise_reduced = new File(NOISE_REDUCED_PATH);
+            File equalized = new File(EQUALIZED_PATH);
+            Equalization.applyParametricEqualization(noise_reduced,equalized);
+        }
     }
 
     /**
@@ -119,6 +103,21 @@ public class HelloController {
         if (selected != null){
             System.out.println("File has been successfully loaded");
         }
+    }
+
+    @FXML
+    protected void PlayAudio(){
+        if (new File(EQUALIZED_PATH).exists()){
+            Utils.playAudio(NOISE_REDUCED_PATH);
+        }
+    }
+
+    @FXML
+    protected void PlayEqualizedAudio(){
+        if (new File(EQUALIZED_PATH).exists()){
+            Utils.playAudio(EQUALIZED_PATH);
+        }
+
     }
 
 }

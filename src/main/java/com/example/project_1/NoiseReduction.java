@@ -1,5 +1,6 @@
 package com.example.project_1;
 
+import javafx.scene.image.ImageView;
 import org.jtransforms.fft.DoubleFFT_1D;
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
@@ -18,7 +19,7 @@ public class NoiseReduction {
      * @throws IOException If there is an error reading or writing the audio files.
      * @throws UnsupportedAudioFileException If the input audio file format is not supported.
      */
-    public static void applyWienerFilter(File inputFile, File outputFile) throws IOException, UnsupportedAudioFileException {
+    public static void applyWienerFilter(File inputFile, File outputFile, ImageView Older, ImageView New) throws IOException, UnsupportedAudioFileException {
         // Read the input audio file
         AudioInputStream inputStream = AudioSystem.getAudioInputStream(inputFile);
         AudioFormat format = inputStream.getFormat();
@@ -34,6 +35,8 @@ public class NoiseReduction {
                 audioData[j][i] = buffer.getShort() / 32768.0;
             }
         }
+
+        Utils.Update_Image(Older,audioData);
 
         // Apply the Wiener filter to each channel
         DoubleFFT_1D fft = new DoubleFFT_1D(numSamples);

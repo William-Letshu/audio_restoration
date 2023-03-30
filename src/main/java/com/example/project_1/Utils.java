@@ -1,80 +1,102 @@
 package com.example.project_1;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtils;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYSplineRenderer;
-import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.paint.Color;
 
-import java.awt.*;
 import java.io.File;
-import java.io.IOException;
+
 
 public class Utils {
 
-    //How to draw a line graph using javafx?
-
-    public static void save_frequency_graph(double[] amplitudes){
-        double[] frequencies = new double[amplitudes.length];
-        for (int i = 0; i < frequencies.length; i++) {
-            frequencies[i] = i;
-        }
-
-
-        // Create dataset
-        XYSeries series = new XYSeries("Frequency Spectrum");
-        for (int i = 0; i < frequencies.length; i++) {
-            series.add(frequencies[i], amplitudes[i]);
-        }
-        XYDataset dataset = new XYSeriesCollection(series);
-
-        // Create chart
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                "Frequency Spectrum",
-                "Frequency (Hz)",
-                "Amplitude",
-                dataset,
-                PlotOrientation.VERTICAL,
-                true,
-                true,
-                false
-        );
-
-        // Set chart colors and fonts
-        chart.setBackgroundPaint(Color.WHITE);
-        XYPlot plot = chart.getXYPlot();
-        plot.setBackgroundPaint(Color.WHITE);
-        plot.setRangeGridlinePaint(Color.BLACK);
-        plot.setDomainGridlinePaint(Color.BLACK);
-        NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-        domainAxis.setAutoRangeIncludesZero(false);
-        domainAxis.setTickLabelFont(domainAxis.getTickLabelFont().deriveFont(10.0f));
-        domainAxis.setLabelFont(domainAxis.getLabelFont().deriveFont(12.0f));
-        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setTickLabelFont(rangeAxis.getTickLabelFont().deriveFont(10.0f));
-        rangeAxis.setLabelFont(rangeAxis.getLabelFont().deriveFont(12.0f));
-
-        // Set chart renderer
-        XYSplineRenderer renderer = new XYSplineRenderer();
-        renderer.setSeriesPaint(0, Color.BLUE);
-        renderer.setPrecision(6);
-        plot.setRenderer(renderer);
-        // Save chart as PNG image
-        int width = 500;   // image width in pixels
-        int height = 300;  // image height in pixels
-        File file = new File("frequency_spectrum.png");
-        try {
-            ChartUtils.saveChartAsPNG(file, chart, width, height);
-        } catch (IOException e) {
-            System.out.println("Error saving chart to PNG: " + e.getMessage());
-        }
-
-        System.out.println("Chart saved as " + file.getAbsolutePath());
+    /**
+     * Updates the given ImageView with a line graph of the audio data.
+     *
+     * @param Older        The ImageView to be updated with the audio data graph.
+     * @param audioData    A 2D array of audio data, where each row represents a channel,
+     *                     and each element within the row represents an audio sample.
+     *                     The values should be normalized between -1 and 1.
+     */
+    public static void Update_Image(ImageView Older, double[][] audioData) {
+        WritableImage audioGraphImage = drawAudioData(audioData);
+        Older.setImage(audioGraphImage);
+        System.out.println("Images done!");
     }
+
+    /**
+     * Draws a line graph of the audio data on a WritableImage.
+     *
+     * @param audioData A 2D array of audio data, where each row represents a channel,
+     *                  and each element within the row represents an audio sample.
+     *                  The values should be normalized between -1 and 1.
+     * @return A WritableImage containing the line graph of the audio data.
+     */
+    private static WritableImage drawAudioData(double[][] audioData) {
+        // Combine audio data from all channels into a single array
+        int numChannels = audioData.length;
+        int numSamples = audioData[0].length;
+        double[] combinedAudioData = new double[numSamples];
+
+        for (int i = 0; i < numSamples; i++) {
+            double sampleValue = 0;
+            for (int j = 0; j < numChannels; j++) {
+                sampleValue += audioData[j][i];
+            }
+            combinedAudioData[i] = sampleValue / numChannels;
+        }
+
+        WritableImage audioGraphImage = new WritableImage(639, 218);
+        PixelWriter pixelWriter = audioGraphImage.getPixelWriter();
+
+        // Clear the background
+        for (int y = 0; y < 218; y++) {
+            for (int x = 0; x < 639; x++) {
+                pixelWriter.setColor(x, y, Color.WHITE);
+            }
+        }
+
+        // Draw the audio data as a line graph
+        int prevX = -1;
+        int prevY = -1;
+        for (int i = 0; i < numSamples; i++) {
+            int x = (int) (((double) i / numSamples) * 639);
+            int y = (int) ((1.0 - (combinedAudioData[i] + 1) / 2.0) * 218);
+
+            if (prevX != -1 && prevY != -1) {
+                // Draw a line between (prevX, prevY) and (x, y) by interpolating points
+                double dx = x - prevX;
+                double dy = y - prevY;
+                double distance = Math.sqrt(dx * dx + dy * dy);
+                for (int j = 0; j < distance; j++) {
+                    double ratio = j / distance;
+                    int interpolatedX = (int) (prevX + ratio * dx);
+                    int interpolatedY = (int) (prevY + ratio * dy);
+
+                    // Ensure the coordinates are within the image bounds
+                    if (interpolatedX >= 0 && interpolatedX < 639 && interpolatedY >= 0 && interpolatedY < 218) {
+                        pixelWriter.setColor(interpolatedX, interpolatedY, Color.BLUE);
+                    }
+                }
+            }
+
+            prevX = x;
+            prevY = y;
+        }
+
+        return audioGraphImage;
+    }
+
+    public static void playAudio(String filePath) {
+        // Load the audio file
+        Media audioFile = new Media(new File(filePath).toURI().toString());
+        // Create a MediaPlayer instance and set it to play the audio file
+        MediaPlayer mediaPlayer = new MediaPlayer(audioFile);
+        mediaPlayer.volumeProperty().set(0.5);
+        mediaPlayer.play();
+    }
+
 
 }
