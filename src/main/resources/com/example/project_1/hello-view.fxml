@@ -1,16 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
-
 <?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.project_1.HelloController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-    </padding>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
-</VBox>
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="781.0" prefWidth="883.0" style="-fx-background-color: black;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project_1.HelloController">
+   <children>
+      <Button fx:id="NoiseEqual" layoutX="629.0" layoutY="706.0" mnemonicParsing="false" onAction="#perform_equalization_noise" text="Noise And Equalization Performed" />
+      <Button fx:id="Equalize" layoutX="359.0" layoutY="706.0" mnemonicParsing="false" onAction="#equalization" text="Equalized Audio" />
+      <Button fx:id="Noise" layoutX="48.0" layoutY="706.0" mnemonicParsing="false" onAction="#noiseReduction" text="Noise Reduced Audio" />
+      <ImageView fitHeight="218.0" fitWidth="639.0" layoutX="14.0" layoutY="384.0" pickOnBounds="true" preserveRatio="true" style="visibility: 1;">
+         <image>
+            <Image url="@./../images/frequency-graph.jpg" />
+         </image>
+      </ImageView>
+      <Slider layoutX="350.0" layoutY="662.0" />
+      <Text fill="#fcc5c5" layoutX="187.0" layoutY="28.0" strokeType="OUTSIDE" strokeWidth="0.0" text="                              Audio Restoration" wrappingWidth="465.7294921875">
+         <font>
+            <Font size="17.0" />
+         </font>
+      </Text>
+      <Pane layoutX="8.0" layoutY="49.0" prefHeight="321.0" prefWidth="870.0" style="-fx-background-color: white;">
+         <children>
+            <ImageView fitHeight="274.0" fitWidth="355.0" layoutX="14.0" layoutY="14.0" mouseTransparent="true" opacity="0.92" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fitHeight="274.0" fitWidth="355.0" layoutX="495.0" layoutY="8.0" mouseTransparent="true" opacity="0.92" pickOnBounds="true" preserveRatio="true" />
+            <Text layoutX="134.0" layoutY="303.0" strokeType="OUTSIDE" strokeWidth="0.0" text="BEFORE" />
+            <Text layoutX="631.0" layoutY="303.0" strokeType="OUTSIDE" strokeWidth="0.0" text="AFTER" />
+         </children>
+      </Pane>
+      <Button fx:id="choose_file" layoutX="39.0" layoutY="7.0" mnemonicParsing="false" onAction="#choose_file" prefHeight="31.0" prefWidth="165.0" text="Choose Audio File" />
+   </children>
+</Pane>
