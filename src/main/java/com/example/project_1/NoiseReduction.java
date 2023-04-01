@@ -15,6 +15,8 @@ import java.nio.ByteOrder;
 
 public class NoiseReduction {
 
+    private static String NOISE_REDUCED_PATH_IMG = "src/main/resources/com/example/images/";
+
     /**
      * Applies the Wiener filtering algorithm for noise reduction on a given audio file and saves the filtered audio to a new file.
      *
@@ -40,7 +42,7 @@ public class NoiseReduction {
             }
         }
 
-        Utils.Update_Image(Older,audioData);
+        Utils.Update_Image(Older,audioData,NOISE_REDUCED_PATH_IMG+"noise");
 
         // Apply the Wiener filter to each channel
         DoubleFFT_1D fft = new DoubleFFT_1D(numSamples);
@@ -48,7 +50,7 @@ public class NoiseReduction {
             wienerFilter(audioData[i], fft);
         }
 
-        Utils.Update_Image(New,audioData);
+        Utils.Update_Image(New,audioData,NOISE_REDUCED_PATH_IMG+"noise_reduced");
 
         // Convert double arrays back to byte arrays
         byte[] outputBytes = new byte[audioBytes.length];

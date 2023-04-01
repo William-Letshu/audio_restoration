@@ -3,13 +3,18 @@ package com.example.project_1;
 import javafx.animation.PauseTransition;
 import javafx.scene.control.Alert;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.PixelReader;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Author William Eteta Letshu
@@ -24,10 +29,20 @@ public class Utils {
      *                     and each element within the row represents an audio sample.
      *                     The values should be normalized between -1 and 1.
      */
-    public static void Update_Image(ImageView Older, double[][] audioData) {
+    public static void Update_Image(ImageView Older, double[][] audioData,String fileName) {
         WritableImage audioGraphImage = drawAudioData(audioData);
         Older.setImage(audioGraphImage);
         System.out.println("Images done!");
+
+        BufferedImage bufferedImage = toBufferedImage(audioGraphImage);
+
+        // Save the BufferedImage to a file
+        try {
+            File outputFile = new File(fileName+".png");
+            ImageIO.write(bufferedImage, "png", outputFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -38,10 +53,36 @@ public class Utils {
      *                     and each element within the row represents an audio sample.
      *                     The values should be normalized between -1 and 1.
      */
-    public static void Update_Image(ImageView Older, double[] audioData) {
+    public static void Update_Image(ImageView Older, double[] audioData, String fileName) {
         WritableImage audioGraphImage = drawAudioData(audioData);
         Older.setImage(audioGraphImage);
         System.out.println("Images done!");
+
+        BufferedImage bufferedImage = toBufferedImage(audioGraphImage);
+
+        // Save the BufferedImage to a file
+        try {
+            File outputFile = new File(fileName+".png");
+            ImageIO.write(bufferedImage, "png", outputFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static BufferedImage toBufferedImage(WritableImage writableImage) {
+        int width = (int) writableImage.getWidth();
+        int height = (int) writableImage.getHeight();
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        PixelReader pixelReader = writableImage.getPixelReader();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int argb = pixelReader.getArgb(x, y);
+                bufferedImage.setRGB(x, y, argb);
+            }
+        }
+
+        return bufferedImage;
     }
 
     /**

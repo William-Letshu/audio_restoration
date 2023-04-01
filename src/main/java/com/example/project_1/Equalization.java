@@ -14,6 +14,7 @@ import java.nio.ByteOrder;
  * Author William Eteta Letshu
  */
 public class Equalization {
+    private static String NOISE_REDUCED_PATH_IMG = "src/main/resources/com/example/images/";
 
     /**
      * Applies parametric equalization to a given audio file and saves the equalized audio to a new file. The equalization is performed
@@ -41,7 +42,7 @@ public class Equalization {
             }
         }
 
-        Utils.Update_Image(Older,audioData);
+        Utils.Update_Image(Older,audioData,NOISE_REDUCED_PATH_IMG+"equalize");
 
         // Apply the parametric equalizer to each channel
         DoubleFFT_1D fft = new DoubleFFT_1D(numSamples);
@@ -49,7 +50,7 @@ public class Equalization {
             parametricEqualization(audioData[i], fft);
         }
 
-        Utils.Update_Image(New,audioData);
+        Utils.Update_Image(New,audioData,NOISE_REDUCED_PATH_IMG+"equalized_audio");
 
         // Convert double arrays back to byte arrays
         byte[] outputBytes = new byte[audioBytes.length];
