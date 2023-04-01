@@ -1,17 +1,19 @@
 package com.example.project_1;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
+/**
+ * Author William Eteta Letshu
+ */
 public class HelloController {
     @FXML
     private ImageView imageViewBefore;
@@ -33,13 +35,6 @@ public class HelloController {
     String EQUALIZED_PATH = "src/main/resources/com/example/Audio/equalized_audio.wav";
     private boolean PERFORMED_NOISE_REDUCTION = false;
 
-    protected byte[] convertDoubleToByteArray(double[] doubles) {
-        ByteBuffer bb = ByteBuffer.allocate(doubles.length * 8);
-        for (double d : doubles) {
-            bb.putDouble(d);
-        }
-        return bb.array();
-    }
     /**
      * This function performs noise reduction
      */
@@ -50,9 +45,11 @@ public class HelloController {
         System.out.println("Performed Noise Reduction");
         if (selected == null){
             System.out.println("File empty");
+            Utils.showAlert(Alert.AlertType.ERROR,"Missing File","Choose a audio file first!");
         }else {
             File reduced_audio = new File(NOISE_REDUCED_PATH);
             NoiseReduction.applyWienerFilter(selected,reduced_audio, imageViewBefore,imageViewAfter);
+            Utils.showAlert(Alert.AlertType.INFORMATION,"DONE!","Noise reduction Completed!");
             PERFORMED_NOISE_REDUCTION = true;
             return true;
         }
@@ -70,12 +67,16 @@ public class HelloController {
         if (!PERFORMED_NOISE_REDUCTION){
             if (selected != null){
                 File equalized = new File(EQUALIZED_PATH);
-                Equalization.applyParametricEqualization(selected,equalized);
+                Equalization.applyParametricEqualization(selected,equalized,imageViewBefore,imageViewAfter);
+                Utils.showAlert(Alert.AlertType.INFORMATION,"DONE!","Equalization Completed!");
+            }else{
+                Utils.showAlert(Alert.AlertType.ERROR,"Missing File","Choose audio file");
             }
         }else{
             File noise_reduced = new File(NOISE_REDUCED_PATH);
             File equalized = new File(EQUALIZED_PATH);
-            Equalization.applyParametricEqualization(noise_reduced,equalized);
+            Equalization.applyParametricEqualization(noise_reduced,equalized,imageViewBefore,imageViewAfter);
+            Utils.showAlert(Alert.AlertType.INFORMATION,"DONE!","Equalization Completed!");
         }
     }
 
@@ -107,8 +108,10 @@ public class HelloController {
 
     @FXML
     protected void PlayAudio(){
-        if (new File(EQUALIZED_PATH).exists()){
+        if (new File(NOISE_REDUCED_PATH).exists()){
             Utils.playAudio(NOISE_REDUCED_PATH);
+        }else {
+            Utils.showAlert(Alert.AlertType.ERROR,"Missing File","Perform noise reduction first");
         }
     }
 
@@ -116,6 +119,8 @@ public class HelloController {
     protected void PlayEqualizedAudio(){
         if (new File(EQUALIZED_PATH).exists()){
             Utils.playAudio(EQUALIZED_PATH);
+        }else {
+            Utils.showAlert(Alert.AlertType.ERROR,"Missing File","Perform equalization first");
         }
 
     }

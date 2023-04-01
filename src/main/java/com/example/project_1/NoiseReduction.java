@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Author William Eteta Letshu
+ */
+
 public class NoiseReduction {
 
     /**
@@ -44,6 +48,8 @@ public class NoiseReduction {
             wienerFilter(audioData[i], fft);
         }
 
+        Utils.Update_Image(New,audioData);
+
         // Convert double arrays back to byte arrays
         byte[] outputBytes = new byte[audioBytes.length];
         buffer = ByteBuffer.wrap(outputBytes).order(ByteOrder.LITTLE_ENDIAN);
@@ -69,6 +75,7 @@ public class NoiseReduction {
      * @param fft An instance of DoubleFFT_1D from the JTransforms library, initialized with the same length as the audio data array.
      */
     private static void wienerFilter(double[] audioData, DoubleFFT_1D fft) {
+        
         // Calculate the power spectrum
         double[] powerSpectrum = new double[audioData.length * 2];
         System.arraycopy(audioData, 0, powerSpectrum, 0, audioData.length);
@@ -88,11 +95,17 @@ public class NoiseReduction {
         }
         noiseEstimate /= noiseSamples;
 
-        // Apply the Wiener filter
+        // Calculate the gain using G(k, i) = ξ(k, i) / (1 + ξ(k, i))
+        double[] gain = new double[audioData.length];
         for (int i = 0; i < audioData.length; i++) {
-            double gain = Math.max(0, 1 - noiseEstimate / (magnitude[i] * magnitude[i]));
-            powerSpectrum[2 * i] *= gain;
-            powerSpectrum[2 * i + 1] *= gain;
+            double aPrioriSNR = magnitude[i] * magnitude[i] / noiseEstimate;
+            gain[i] = aPrioriSNR / (1 + aPrioriSNR);
+        }
+
+        // Apply the Wiener filter using the gain function
+        for (int i = 0; i < audioData.length; i++) {
+            powerSpectrum[2 * i] *= gain[i];
+            powerSpectrum[2 * i + 1] *= gain[i];
         }
 
         // Calculate the inverse FFT
@@ -101,11 +114,5 @@ public class NoiseReduction {
         // Copy the filtered data back to the audioData array
         System.arraycopy(powerSpectrum, 0, audioData, 0, audioData.length);
     }
-
-//    public static void main(String[] args) throws IOException, UnsupportedAudioFileException {
-//        File inputFile = new File("src/main/resources/com/example/Audio/Audio.wav");
-//        File outputFile = new File("src/main/resources/com/example/Audio/output_audio.wav");
-//        applyWienerFilter(inputFile, outputFile);
-//    }
-
+    
 }

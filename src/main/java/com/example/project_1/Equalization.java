@@ -1,5 +1,6 @@
 package com.example.project_1;
 
+import javafx.scene.image.ImageView;
 import org.jtransforms.fft.DoubleFFT_1D;
 
 import javax.sound.sampled.*;
@@ -9,6 +10,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+/**
+ * Author William Eteta Letshu
+ */
 public class Equalization {
 
     /**
@@ -20,7 +24,7 @@ public class Equalization {
      * @throws IOException If there is an error reading or writing the audio files.
      * @throws UnsupportedAudioFileException If the input audio file format is not supported.
      */
-    public static void applyParametricEqualization(File inputFile, File outputFile) throws IOException, UnsupportedAudioFileException {
+    public static void applyParametricEqualization(File inputFile, File outputFile, ImageView Older, ImageView New) throws IOException, UnsupportedAudioFileException {
         // Read the input audio file
         AudioInputStream inputStream = AudioSystem.getAudioInputStream(inputFile);
         AudioFormat format = inputStream.getFormat();
@@ -37,11 +41,15 @@ public class Equalization {
             }
         }
 
+        Utils.Update_Image(Older,audioData);
+
         // Apply the parametric equalizer to each channel
         DoubleFFT_1D fft = new DoubleFFT_1D(numSamples);
         for (int i = 0; i < numChannels; i++) {
             parametricEqualization(audioData[i], fft);
         }
+
+        Utils.Update_Image(New,audioData);
 
         // Convert double arrays back to byte arrays
         byte[] outputBytes = new byte[audioBytes.length];
@@ -108,10 +116,4 @@ public class Equalization {
         System.arraycopy(powerSpectrum, 0, audioData, 0, audioData.length);
     }
 
-
-    public static void main(String[] args) throws IOException, UnsupportedAudioFileException {
-        File inputFile = new File("src/main/resources/com/example/Audio/output_audio.wav");
-        File outputFile = new File("src/main/resources/com/example/Audio/equalized_audio.wav");
-        applyParametricEqualization(inputFile, outputFile);
-    }
 }
