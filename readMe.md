@@ -15,13 +15,16 @@ Ensure that you have the following software installed on your machine:
 
 ```bash
 git clone https://github.com/William-Letshu/audio_restoration.git
-cd audio_restoration-main
+cd audio_restoration
 mvn clean install
 mvn exec:java -Dexec.mainClass="com.example.project_1.HelloApplication"
 ```
 
 
 Follow the prompts to provide the necessary input parameters, such as input audio file, output file name, and processing options. The program will process the audio file and save the restored output in the specified location.
+
+### Image of the program once it's running
+![Image of the program](src/main/resources/com/example/images/program.png)
 
 ## License
 
